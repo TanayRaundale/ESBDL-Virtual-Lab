@@ -1,38 +1,57 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet,Alert } from "react-native";
-import { Link } from "expo-router";
-import API from "../src/services/api.js"
-import { useRouter } from "expo-router";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert
+} from "react-native";
+
+import { Link, useRouter } from "expo-router";
+import API from "../src/services/api.js";
 
 export default function Register() {
 
   const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("student");
+  const [name, setName] = useState("");
+
 
   const handleRegister = async () => {
 
-    if ( !email || !password) {
+    if (!email || !password || !role) {
       Alert.alert("All fields are required");
       return;
     }
 
     try {
-      const res = await API.post('/register',{
+
+      await API.post("/register", {
+        name,
         email,
-        password
+        password,
+        role   // 👈 SEND ROLE
       });
 
-     Alert.alert("Success", "Registered  Successfully", [
-             {
-               text: "OK",
-               onPress: () => router.replace("/login"),
-             },
-           ]);
-          
-      
+      Alert.alert("Success", "Registered Successfully", [
+        {
+          text: "OK",
+          onPress: () => router.replace("/login"),
+        },
+      ]);
+
     } catch (error) {
-      Alert.alert(error.response?.data?.msg || "Registration failed");
+
+      console.log("Register Error:", error);
+
+      Alert.alert(
+        "Registration Failed",
+        error.response?.data?.msg || "Registration failed"
+      );
     }
   };
 
@@ -41,8 +60,36 @@ export default function Register() {
 
       <Text style={styles.title}>Register</Text>
 
-     
+      {/* ROLE SELECT */}
+      <View style={styles.roleContainer}>
 
+        <TouchableOpacity
+          style={[
+            styles.roleBtn,
+            role === "student" && styles.activeRole
+          ]}
+          onPress={() => setRole("student")}
+        >
+          <Text style={styles.roleText}>Student</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.roleBtn,
+            role === "teacher" && styles.activeRole
+          ]}
+          onPress={() => setRole("teacher")}
+        >
+          <Text style={styles.roleText}>Teacher</Text>
+        </TouchableOpacity>
+
+      </View>
+<TextInput
+  placeholder="Name"
+  style={styles.input}
+  value={name}
+  onChangeText={setName}
+/>
       <TextInput
         placeholder="Email"
         style={styles.input}
@@ -58,21 +105,25 @@ export default function Register() {
         onChangeText={setPassword}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleRegister}
+      >
         <Text style={styles.buttonText}>Register</Text>
       </TouchableOpacity>
-      <Link href="/login" style={{ marginTop: 15 }}>
-  <Text style={{ color: "#2563eb" }}>
-    Already have an account? Login
-  </Text>
-</Link>
 
+      <Link href="/login" style={{ marginTop: 15 }}>
+        <Text style={{ color: "#2563eb" }}>
+          Already have an account? Login
+        </Text>
+      </Link>
 
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     justifyContent: "center",
@@ -84,8 +135,31 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 30,
+    marginBottom: 25,
+  },
+
+  roleContainer: {
+    flexDirection: "row",
+    marginBottom: 20,
+  },
+
+  roleBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 25,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 8,
+    marginHorizontal: 8,
+  },
+
+  activeRole: {
+    backgroundColor: "#2563eb",
+    borderColor: "#2563eb",
+  },
+
+  roleText: {
     color: "#000",
+    fontWeight: "600",
   },
 
   input: {
@@ -96,7 +170,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 15,
     marginBottom: 15,
-    color: "#000",
   },
 
   button: {
@@ -113,4 +186,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+
 });
