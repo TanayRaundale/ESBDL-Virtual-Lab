@@ -6,61 +6,47 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 
 import { router, Link } from "expo-router";
-
-import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
 
-import API from "../src/services/api";   // your base url
+import API from "../src/services/api";
 
 export default function Login() {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [secure, setSecure] = useState(true);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     try {
-
       if (!email || !password) {
-        Alert.alert("Error", "Enter email and password");
+        Alert.alert("Missing Fields", "Please enter email and password");
         return;
       }
 
       setLoading(true);
 
-      const res = await API.post("/login", {
-  email,
-  password
-});
-
-
+      const res = await API.post("/auth/login", { email, password });
       const data = res.data;
 
-      // ✅ STORE TOKEN & ROLE
       await AsyncStorage.setItem("token", data.token);
       await AsyncStorage.setItem("role", data.user.role);
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
 
-      // OPTIONAL: store user
-      await AsyncStorage.setItem(
-        "user",
-        JSON.stringify(data.user)
-      );
+      Alert.alert("Welcome 🎉", "Login successful");
 
-      Alert.alert("Success", "Login Successful");
-
-      // ✅ ROLE BASED ROUTING
       if (data.user.role === "teacher") {
         router.replace("/(teacher)/dashboard");
       } else {
         router.replace("/(student)/home");
       }
-
     } catch (error) {
-
       console.log("Login Error:", error);
 
       const message =
@@ -69,102 +55,168 @@ export default function Login() {
         "Invalid email or password";
 
       Alert.alert("Login Failed", message);
-
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <View style={styles.container}>
 
-      <Text style={styles.title}>College App Login</Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>ESDL</Text>
+          <Text style={styles.subtitle}>
+            Login to continue your journey
+          </Text>
+        </View>
 
-      <TextInput
-        placeholder="Email"
-        style={styles.input}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
+        {/* Card */}
+        <View style={styles.card}>
+          {/* Email */}
+          <View style={styles.inputWrapper}>
+            <Ionicons name="mail-outline" size={20} color="#64748b" />
+            <TextInput
+              placeholder="Email address"
+              style={styles.input}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+          </View>
 
-      <TextInput
-        placeholder="Password"
-        style={styles.input}
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+          {/* Password */}
+          <View style={styles.inputWrapper}>
+            <Ionicons name="lock-closed-outline" size={20} color="#64748b" />
+            <TextInput
+              placeholder="Password"
+              style={styles.input}
+              secureTextEntry={secure}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity onPress={() => setSecure(!secure)}>
+              <Ionicons
+                name={secure ? "eye-outline" : "eye-off-outline"}
+                size={20}
+                color="#64748b"
+              />
+            </TouchableOpacity>
+          </View>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Login</Text>
-        )}
-      </TouchableOpacity>
-      <Link href="/register" style={styles.registerLink}>
-  <Text style={styles.registerText}>
-    Don't have an account? Register
-  </Text>
-</Link>
+          {/* Button */}
+          <TouchableOpacity
+            style={[styles.button, loading && { opacity: 0.7 }]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Login</Text>
+            )}
+          </TouchableOpacity>
 
+          {/* Register */}
+          <Link href="/register" style={styles.registerLink}>
+            <Text style={styles.registerText}>
+              Don’t have an account?{" "}
+              <Text style={styles.registerBold}>Register</Text>
+            </Text>
+          </Link>
+        </View>
 
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
+    backgroundColor: "#f1f5f9",
     justifyContent: "center",
-    padding: 24,
-    backgroundColor: "#f8fafc"
+    padding: 20
+  },
+
+  header: {
+    alignItems: "center",
+    marginBottom: 30
   },
 
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 30,
-    textAlign: "center",
+    fontSize: 32,
+    fontWeight: "800",
     color: "#0f172a"
   },
-registerLink: {
-  marginTop: 20,
-},
 
-registerText: {
-  color: "#2563eb",
-  textAlign: "center",
-  fontWeight: "bold"
-}
-,
-  input: {
+  subtitle: {
+    marginTop: 6,
+    fontSize: 15,
+    color: "#64748b"
+  },
+
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6
+  },
+
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: "#cbd5e1",
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 15,
-    backgroundColor: "#fff"
+    borderColor: "#e2e8f0",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 16,
+    backgroundColor: "#f8fafc"
+  },
+
+  input: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 15,
+    color: "#0f172a"
   },
 
   button: {
     backgroundColor: "#2563eb",
-    padding: 16,
-    borderRadius: 10
+    paddingVertical: 16,
+    borderRadius: 14,
+    marginTop: 10
   },
 
   buttonText: {
     color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-    fontSize: 16
-  }
+    fontSize: 16,
+    fontWeight: "700",
+    textAlign: "center"
+  },
 
+  registerLink: {
+    marginTop: 22
+  },
+
+  registerText: {
+    textAlign: "center",
+    color: "#64748b",
+    fontSize: 14
+  },
+
+  registerBold: {
+    color: "#2563eb",
+    fontWeight: "700"
+  }
 });
