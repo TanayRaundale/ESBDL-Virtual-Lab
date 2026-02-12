@@ -69,7 +69,7 @@ export default function Login() {
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>ESDL</Text>
+          <Text style={styles.title}>ESDM</Text>
           <Text style={styles.subtitle}>
             Login to continue your journey
           </Text>

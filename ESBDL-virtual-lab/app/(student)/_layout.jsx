@@ -25,13 +25,18 @@ export default function StudentLayout() {
   return (
     <Drawer
       screenOptions={{
-        headerStyle: { backgroundColor: "#2563eb" },
+        headerStyle: { backgroundColor: "#0f172a" },
         headerTintColor: "#fff",
         headerTitleStyle: { fontWeight: "700" },
+         drawerStyle: {
+          
+          width:"250",
+      backgroundColor: "#0f172a", // change this to any color you want
+    },
 
-        drawerActiveBackgroundColor: "#e0e7ff",
-        drawerActiveTintColor: "#2563eb",
-        drawerInactiveTintColor: "#334155",
+        drawerActiveBackgroundColor: "#1e293b",
+        drawerActiveTintColor: "#38bdf8",
+        drawerInactiveTintColor: "#cbd5f5",
 
         drawerLabelStyle: {
           marginLeft: -10,
@@ -143,8 +148,10 @@ function CustomDrawer(props) {
   };
 
   return (
-    <DrawerContentScrollView {...props}>
-      <TouchableOpacity
+    <DrawerContentScrollView {...props}  contentContainerStyle={{
+    marginTop: 40,   // 👈 adjust this value
+  }}>
+      {/* <TouchableOpacity
         activeOpacity={0.85}
         onPress={goToProfile}
         style={styles.drawerHeader}
@@ -158,9 +165,9 @@ function CustomDrawer(props) {
           <Ionicons name="person-circle-outline" size={80} color="#fff" />
         )}
 
-        <Text style={styles.drawerTitle}>Student</Text>
-        <Text style={styles.drawerSubtitle}>Tap to view profile</Text>
-      </TouchableOpacity>
+        {/* <Text style={styles.drawerTitle}>Student</Text>
+        <Text style={styles.drawerSubtitle}>Tap to view profile</Text> */} 
+      {/* </TouchableOpacity> */}
 
       <DrawerItemList {...props} />
     </DrawerContentScrollView>
@@ -172,7 +179,7 @@ const styles = StyleSheet.create({
   drawerHeader: {
     height: 180,
     backgroundColor: "#2563eb",
-    padding: 20,
+    padding: 40,
     justifyContent: "flex-end",
   },
 

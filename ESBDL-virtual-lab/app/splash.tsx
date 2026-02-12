@@ -144,7 +144,7 @@ export default function Splash() {
           },
         ]}
       >
-        <Text style={styles.title}>ESBDL Virtual Lab</Text>
+        <Text style={styles.title}>ESDM Virtual Lab</Text>
         <Text style={styles.subtitle}>Empowering Digital Learning</Text>
       </Animated.View>
 
