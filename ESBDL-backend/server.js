@@ -5,6 +5,7 @@ import cors from "cors";
 import connectDB from "./src/config/db.js";
 
 // ROUTES
+import noteroutes from "./src/routes/noteroutes.js"
 import authRoutes from "./src/routes/authroutes.js";
 import profileRoutes from "./src/routes/profileRoutes.js";
 
@@ -22,6 +23,7 @@ connectDB();
 // ================= ROUTES =================
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/notes",noteroutes);
 
 // ================= HEALTH CHECK =================
 app.get("/", (req, res) => {

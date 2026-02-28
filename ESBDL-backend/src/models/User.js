@@ -2,17 +2,74 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    name: String,
-    email: { type: String, unique: true },
-    password: String,
-    role: String,
+    rollNo: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
 
-    // 👇 PROFILE FIELDS
-    photo: String,        // base64
-    phone: String,
-    address: String,
-    year: String,
-    department: String
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+    },
+
+    role: {
+      type: String,
+      enum: ["student", "teacher", "admin"],
+      required: true,
+    },
+
+    // 👇 Academic Info
+   classAssigned: {
+  type: [String],
+  enum: ["SE9", "SE10", "SE11"],
+  default: [],
+},
+
+
+    department: {
+      type: String,
+      trim: true,
+    },
+
+    // 👇 Profile Info
+    photo: {
+      type: String, // base64 or URL
+      default: null,
+    },
+
+  
+
+    address: {
+      type: String,
+      trim: true,
+    },
+
+    year: {
+      type: String,
+      trim: true,
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );

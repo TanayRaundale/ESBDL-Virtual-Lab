@@ -1,4 +1,6 @@
 import { useState } from "react";
+import API from "../../src/services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View,
   Text,
@@ -6,27 +8,30 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Alert
+  Alert,
+  ActivityIndicator
 } from "react-native";
 
 import * as DocumentPicker from "expo-document-picker";
 import { Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
 
 export default function AddNotes() {
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
   const [subject, setSubject] = useState("");
+  const [className, setClassName] = useState("");
   const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   /* ================= PICK FILE ================= */
   const pickFile = async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: [
         "application/pdf",
-        "application/vnd.ms-powerpoint",
-        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-powerpoint",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation"
       ]
     });
 
@@ -36,13 +41,51 @@ export default function AddNotes() {
   };
 
   /* ================= SUBMIT ================= */
-  const uploadNotes = () => {
-    if (!title || !subject || !file) {
+  const uploadNotes = async () => {
+    if (!title || !subject || !className || !file) {
       Alert.alert("Missing Fields", "Please fill all required fields");
       return;
     }
 
-    Alert.alert("Success", "Notes ready to be uploaded");
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("subject", subject);
+      formData.append("className", className);
+
+      formData.append("file", {
+        uri: file.uri,
+        name: file.name,
+        type: file.mimeType || "application/octet-stream"
+      });
+       const token = await AsyncStorage.getItem("token");
+
+const response = await API.post(
+  "/notes/add",
+  formData,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data"
+    }
+  }
+);
+
+Alert.alert("Success", "Notes uploaded successfully");
+
+setTitle("");
+setSubject("");
+setClassName("");
+setFile(null);
+
+     
+    } catch (error) {
+      Alert.alert("Error", "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,24 +101,28 @@ export default function AddNotes() {
         onChangeText={setTitle}
       />
 
-      {/* Description */}
-      <Text style={styles.label}>Description</Text>
-      <TextInput
-        style={[styles.input, styles.textArea]}
-        placeholder="Brief description"
-        multiline
-        value={description}
-        onChangeText={setDescription}
-      />
-
       {/* Subject */}
-      <Text style={styles.label}>Subject / Lab *</Text>
+      <Text style={styles.label}>Subject *</Text>
       <TextInput
         style={styles.input}
         placeholder="e.g. ESDM Virtual Lab"
         value={subject}
         onChangeText={setSubject}
       />
+
+      {/* Class Dropdown */}
+      <Text style={styles.label}>Class *</Text>
+      <View style={styles.dropdown}>
+        <Picker
+          selectedValue={className}
+          onValueChange={(itemValue) => setClassName(itemValue)}
+        >
+          <Picker.Item label="Select Class" value="" />
+          <Picker.Item label="SY9" value="SY9" />
+          <Picker.Item label="SY10" value="SY10" />
+          <Picker.Item label="SY11" value="SY11" />
+        </Picker>
+      </View>
 
       {/* File Picker */}
       <Text style={styles.label}>Upload File *</Text>
@@ -86,16 +133,20 @@ export default function AddNotes() {
         </Text>
       </TouchableOpacity>
 
-      {file && (
-        <Text style={styles.fileInfo}>
-          Selected: {file.name}
-        </Text>
-      )}
-
-      {/* Submit */}
-      <TouchableOpacity style={styles.submitBtn} onPress={uploadNotes}>
-        <Ionicons name="add-circle-outline" size={22} color="#fff" />
-        <Text style={styles.submitText}>Publish Notes</Text>
+      {/* Submit Button */}
+      <TouchableOpacity
+        style={styles.submitBtn}
+        onPress={uploadNotes}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <>
+            <Ionicons name="add-circle-outline" size={22} color="#fff" />
+            <Text style={styles.submitText}>Publish Notes</Text>
+          </>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
@@ -131,9 +182,12 @@ const styles = StyleSheet.create({
     fontSize: 15
   },
 
-  textArea: {
-    height: 90,
-    textAlignVertical: "top"
+  dropdown: {
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    marginBottom: 10
   },
 
   fileBtn: {
@@ -150,12 +204,6 @@ const styles = StyleSheet.create({
   fileBtnText: {
     color: "#2563eb",
     fontWeight: "600"
-  },
-
-  fileInfo: {
-    marginTop: 6,
-    color: "#64748b",
-    fontSize: 13
   },
 
   submitBtn: {
@@ -175,3 +223,4 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   }
 });
+

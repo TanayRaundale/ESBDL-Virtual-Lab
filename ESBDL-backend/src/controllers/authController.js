@@ -3,36 +3,78 @@ import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs"
 
 
-
 export const register = async (req, res) => {
- 
   try {
-    const { name, email, password, role } = req.body;
-    console.log({
-  name,
-  email,
-  password,
-  role
-});
+    const {
+      rollNo,
+      name,
+      email,
+      password,
+      role,
+      classAssigned,
+      department,
+      phone,
+      address,
+      year
+    } = req.body;
 
-    const exists = await User.findOne({ email });
-    if (exists)
-      return res.status(400).json({ msg: "User already exists" });
+    // 🔹 Basic Validation
+    if (!rollNo || !name || !email || !password || !role) {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields missing",
+      });
+    }
 
+    // 🔹 Email exists check
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already registered",
+      });
+    }
+
+    // 🔹 RollNo exists check
+    const existingRoll = await User.findOne({ rollNo });
+    if (existingRoll) {
+      return res.status(400).json({
+        success: false,
+        message: "Roll number already exists",
+      });
+    }
+
+    // 🔹 Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-
-    await User.create({
+    // 🔹 Create user
+    const user = await User.create({
+      rollNo,
       name,
       email,
       password: hashedPassword,
-      role   
+      role,
+      classAssigned,   // ✅ stored for both student & teacher
+      department,
+      phone,
+      address,
+      year
     });
 
-    res.json({ msg: "Registered Successfully" });
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.status(201).json({
+      success: true,
+      message: "Registered Successfully",
+      data: userResponse
+    });
 
   } catch (error) {
-    res.status(500).json({ msg: "Server Error" });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
