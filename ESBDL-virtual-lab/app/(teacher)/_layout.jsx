@@ -75,7 +75,7 @@ export default function TeacherLayout() {
       <Drawer.Screen
         name="add-notes"
         options={{
-          title: "Upload Notes",
+          title: "Notes",
           drawerIcon: ({ color, size }) => (
             <Ionicons name="document-text-outline" size={size} color={color} />
           ),
@@ -111,6 +111,12 @@ export default function TeacherLayout() {
           ),
         }}
       />
+      <Drawer.Screen
+  name="upload-notes"
+  options={{
+    drawerItemStyle: { display: "none" }, // 🔥 hides from sidebar
+  }}
+/>
     </Drawer>
   );
 }

@@ -6,8 +6,8 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: "esdm-notes",
-    resource_type: "raw", // IMPORTANT for pdf/docx/ppt
-    allowed_formats: ["pdf", "doc", "docx", "ppt", "pptx"]
+    resource_type: "auto",   // 🔥 MOST IMPORTANT FIX
+    access_mode: "public",
   },
 });
 
