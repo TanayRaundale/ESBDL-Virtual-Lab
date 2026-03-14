@@ -2,17 +2,18 @@ import Note from "../models/Note.js";
 
 export const noteController = async (req, res) => {
   try {
-    const { title, unit, unitTitle, classes } = req.body;
+    const { topic, unit, unitNumber, classes } = req.body;
 
-    if (!req.file) {
+    /* ================= VALIDATION ================= */
+
+    if (!req.files || req.files.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "File is required",
+        message: "At least one file is required",
       });
     }
 
-
-    if (!title || !unit || !unitTitle || !classes) {
+    if (!topic || !unit || !unitNumber || !classes) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -23,12 +24,22 @@ export const noteController = async (req, res) => {
     const parsedClasses =
       typeof classes === "string" ? JSON.parse(classes) : classes;
 
+    /* ================= MULTIPLE FILES ================= */
+
+    const uploadedFiles = req.files.map((file) => ({
+      fileUrl: file.path,        // ✅ Cloudinary URL or local path
+      fileName: file.originalname,
+      mimeType: file.mimetype,
+    }));
+
+    /* ================= SAVE ================= */
+
     const note = await Note.create({
-      title,
+      topic,
+      unitNumber,
       unit,
-      unitTitle,
       classes: parsedClasses,
-      fileUrl: req.file.path, // ✅ Cloudinary URL
+      files: uploadedFiles,   // 🔥 store array
       uploadedBy: req.user.id,
     });
 
@@ -45,6 +56,8 @@ export const noteController = async (req, res) => {
     });
   }
 };
+
+/* ================= GET RECENT ================= */
 
 export const getRecentNotes = async (req, res) => {
   try {

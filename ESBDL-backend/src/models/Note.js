@@ -2,50 +2,38 @@ import mongoose from "mongoose";
 
 const noteSchema = new mongoose.Schema(
   {
-    title: {
+    topic: {
       type: String,
       required: true,
-      trim: true,
     },
 
-    /* 🔹 FIXED SUBJECT */
-    subject: {
+    unitNumber: {
       type: String,
-      default: "ESDM",
-      immutable: true, // prevents future changes
+      required: true,
     },
 
-    /* 🔹 UNIT NUMBER */
     unit: {
-      type: Number,
-      required: true,
-      min: 1,
-      max: 10,
-    },
-
-    /* 🔹 UNIT TITLE */
-    unitTitle: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    /* 🔹 MULTIPLE CLASSES */
-    classes: {
-      type: [String],
-      enum: ["SY9", "SY10", "SY11"],
+      type: String,   // 🔥 FIXED
       required: true,
     },
 
-    fileUrl: {
-      type: String,
-      required: true,
-    },
+    classes: [
+      {
+        type: String,
+      },
+    ],
+
+    files: [
+      {
+        fileUrl: String,
+        fileName: String,
+        mimeType: String,
+      },
+    ],
 
     uploadedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
   },
   { timestamps: true }

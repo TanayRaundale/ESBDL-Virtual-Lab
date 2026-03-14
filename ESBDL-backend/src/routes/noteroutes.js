@@ -9,7 +9,7 @@ const router = express.Router();
 router.post(
   "/add",
   authMiddleware,
-  upload.single("file"),  // 🔥 IMPORTANT
+  upload.array("files"), // 🔥 MUST match frontend
   noteController
 );
 
